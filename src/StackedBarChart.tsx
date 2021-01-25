@@ -48,6 +48,10 @@ export interface StackedBarChartProps extends AbstractChartProps {
   segments?: number;
 
   percentile?: boolean;
+  /**
+   * Callback that is called when a data point is clicked.
+   */
+  onDataPointClick?: (data: { index: number; x: number; y: number }) => void;
 }
 
 type StackedBarChartState = {};
@@ -75,7 +79,8 @@ class StackedBarChart extends AbstractChart<
     paddingRight,
     border,
     colors,
-    stackedBar = false
+    stackedBar = false,
+    onDataPointClick
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     "width" | "height" | "paddingRight" | "paddingTop" | "stackedBar"
@@ -83,6 +88,7 @@ class StackedBarChart extends AbstractChart<
     border: number;
     colors: string[];
     data: number[][];
+    onDataPointClick: StackedBarChartProps["onDataPointClick"];
   }) =>
     data.map((x, i) => {
       const barWidth = 32 * this.getBarPercentage();
@@ -105,6 +111,18 @@ class StackedBarChart extends AbstractChart<
             barWidth / 2) *
           fac;
 
+        const onPress = () => {
+          if (!onDataPointClick) {
+            return;
+          }
+
+          onDataPointClick({
+            index: i,
+            x: xC,
+            y: y
+          });
+        };
+
         ret.push(
           <Rect
             key={Math.random()}
@@ -115,6 +133,7 @@ class StackedBarChart extends AbstractChart<
             width={barWidth}
             height={h}
             fill={colors[z]}
+            onPress={onPress}
           />
         );
 
@@ -184,7 +203,8 @@ class StackedBarChart extends AbstractChart<
       withVerticalLabels = true,
       segments = 4,
       decimalPlaces,
-      percentile = false
+      percentile = false,
+      onDataPointClick
     } = this.props;
 
     const { borderRadius = 0 } = style;
@@ -252,7 +272,8 @@ class StackedBarChart extends AbstractChart<
                   paddingRight: paddingRight + 28,
                   stackedBar,
                   paddingTop,
-                  horizontalOffset: barWidth
+                  horizontalOffset: barWidth,
+                  onDataPointClick
                 })
               : null}
           </G>
@@ -264,7 +285,8 @@ class StackedBarChart extends AbstractChart<
               colors: this.props.data.barColors,
               paddingTop,
               paddingRight: paddingRight + 20,
-              stackedBar
+              stackedBar,
+              onDataPointClick
             })}
           </G>
           {data.legend &&

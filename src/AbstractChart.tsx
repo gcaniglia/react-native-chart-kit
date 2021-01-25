@@ -1,5 +1,13 @@
 import React, { Component } from "react";
-import { Defs, Line, LinearGradient, Stop, Text } from "react-native-svg";
+import {
+  Defs,
+  Line,
+  LinearGradient,
+  Stop,
+  Text,
+  Rect,
+  G
+} from "react-native-svg";
 
 import { ChartConfig, Dataset, PartialBy } from "./HelperTypes";
 
@@ -14,6 +22,10 @@ export interface AbstractChartProps {
   xAxisLabel?: string;
   xLabelsOffset?: number;
   hidePointsAtIndex?: number[];
+  /**
+   * Callback that is called when a data point is clicked.
+   */
+  onDataPointClick?: (data: { index: number; x: number; y: number }) => void;
 }
 
 export interface AbstractChartConfig extends ChartConfig {
@@ -227,7 +239,8 @@ class AbstractChart<
     horizontalOffset = 0,
     stackedBar = false,
     verticalLabelRotation = 0,
-    formatXLabel = xLabel => xLabel
+    formatXLabel = xLabel => xLabel,
+    onDataPointClick
   }: Pick<
     AbstractChartConfig,
     | "labels"
@@ -239,7 +252,9 @@ class AbstractChart<
     | "stackedBar"
     | "verticalLabelRotation"
     | "formatXLabel"
-  >) => {
+  > & {
+    onDataPointClick?: AbstractChartProps["onDataPointClick"];
+  }) => {
     const {
       xAxisLabel = "",
       xLabelsOffset = 0,
@@ -266,20 +281,83 @@ class AbstractChart<
 
       const y = (height * 3) / 4 + paddingTop + fontSize * 2 + xLabelsOffset;
 
-      return (
-        <Text
-          origin={`${x}, ${y}`}
-          rotation={verticalLabelRotation}
-          key={Math.random()}
-          x={x}
-          y={y}
-          textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
-          {...this.getPropsForLabels()}
-          {...this.getPropsForVerticalLabels()}
-        >
-          {`${formatXLabel(label)}${xAxisLabel}`}
-        </Text>
-      );
+      const onPress = () => {
+        if (!onDataPointClick) {
+          return;
+        }
+
+        onDataPointClick({
+          index: i,
+          x: x,
+          y: y
+        });
+      };
+
+      if (i === 3) {
+        return (
+          <G key={Math.random()}>
+            <Rect
+              key={Math.random()}
+              x={x - horizontalOffset / 2}
+              y={y - 20}
+              fill={"white"}
+              width={horizontalOffset}
+              height={20}
+              onPress={onPress}
+            />
+            <Text
+              origin={`${x}, ${y}`}
+              rotation={verticalLabelRotation}
+              key={Math.random()}
+              x={x}
+              y={y}
+              fontWeight={"bold"}
+              textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
+              {...this.getPropsForLabels()}
+              {...this.getPropsForVerticalLabels()}
+              onPress={onPress}
+            >
+              {`${formatXLabel(label)}${xAxisLabel}`}
+            </Text>
+            <Rect
+              key={Math.random()}
+              x={x - horizontalOffset / 2 + 4}
+              y={y + 4}
+              fill={"#99e5ea"}
+              width={horizontalOffset - 8}
+              height={3}
+              onPress={onPress}
+            />
+          </G>
+        );
+      } else {
+        return (
+          <G key={Math.random()}>
+            <Rect
+              key={Math.random()}
+              x={x - horizontalOffset / 2}
+              y={y - 20}
+              fill={"white"}
+              width={horizontalOffset}
+              height={20}
+              onPress={onPress}
+            />
+            <Text
+              origin={`${x}, ${y}`}
+              rotation={verticalLabelRotation}
+              key={Math.random()}
+              x={x}
+              y={y}
+              textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
+              {...this.getPropsForLabels()}
+              {...this.getPropsForVerticalLabels()}
+              onPress={onPress}
+            >
+              {`${formatXLabel(label)}${xAxisLabel}`}
+            </Text>
+          </G>
+        );
+      }
     });
   };
 
