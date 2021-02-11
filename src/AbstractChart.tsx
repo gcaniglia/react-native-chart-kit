@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Animated } from "react-native";
 import {
   Defs,
   Line,
@@ -42,9 +43,16 @@ export interface AbstractChartConfig extends ChartConfig {
   stackedBar?: boolean;
   verticalLabelRotation?: number;
   formatXLabel?: (xLabel: string) => string;
+  isSelectedIndex?: number;
 }
 
-export type AbstractChartState = {};
+export type AbstractChartState = {
+  isSelectedIndex?: number;
+  scrollableDotHorizontalOffset?: Animated.Value;
+  maxValue?: number;
+  minValue?: number;
+  valueCache?: object;
+};
 
 class AbstractChart<
   IProps extends AbstractChartProps,
@@ -240,7 +248,8 @@ class AbstractChart<
     stackedBar = false,
     verticalLabelRotation = 0,
     formatXLabel = xLabel => xLabel,
-    onDataPointClick
+    onDataPointClick,
+    isSelectedIndex
   }: Pick<
     AbstractChartConfig,
     | "labels"
@@ -252,6 +261,7 @@ class AbstractChart<
     | "stackedBar"
     | "verticalLabelRotation"
     | "formatXLabel"
+    | "isSelectedIndex"
   > & {
     onDataPointClick?: AbstractChartProps["onDataPointClick"];
   }) => {
@@ -286,6 +296,10 @@ class AbstractChart<
           return;
         }
 
+        this.setState({
+          isSelectedIndex : i
+        });
+
         onDataPointClick({
           index: i,
           x: x,
@@ -293,7 +307,7 @@ class AbstractChart<
         });
       };
 
-      if (i === 3) {
+      if (i === isSelectedIndex) {
         return (
           <G key={Math.random()}>
             <Rect

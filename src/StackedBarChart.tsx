@@ -51,15 +51,26 @@ export interface StackedBarChartProps extends AbstractChartProps {
   /**
    * Callback that is called when a data point is clicked.
    */
-  onDataPointClick?: (data: { index: number; x: number; y: number }) => void;
+  onDataPointClick?: (data: {
+    index: number;
+    x: number;
+    y: number;
+  }) => void;
 }
 
-type StackedBarChartState = {};
+type StackedBarChartState = {
+  isSelectedIndex: number;
+};
 
 class StackedBarChart extends AbstractChart<
   StackedBarChartProps,
   StackedBarChartState
 > {
+
+  state = {
+    isSelectedIndex: 3
+  };
+
   getBarPercentage = () => {
     const { barPercentage = 1 } = this.props.chartConfig;
     return barPercentage;
@@ -115,6 +126,10 @@ class StackedBarChart extends AbstractChart<
           if (!onDataPointClick) {
             return;
           }
+
+          this.setState({
+            isSelectedIndex : i
+          });
 
           onDataPointClick({
             index: i,
@@ -273,7 +288,8 @@ class StackedBarChart extends AbstractChart<
                   stackedBar,
                   paddingTop,
                   horizontalOffset: barWidth,
-                  onDataPointClick
+                  onDataPointClick,
+                  isSelectedIndex: this.state.isSelectedIndex
                 })
               : null}
           </G>
