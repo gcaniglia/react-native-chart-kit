@@ -51,11 +51,9 @@ export interface StackedBarChartProps extends AbstractChartProps {
   /**
    * Callback that is called when a data point is clicked.
    */
-  onDataPointClick?: (data: {
-    index: number;
-    x: number;
-    y: number;
-  }) => void;
+  onDataPointClick?: (data: { index: number; x: number; y: number }) => void;
+
+  onArrowClick?: (data: { arrow: string }) => void;
 }
 
 type StackedBarChartState = {
@@ -66,7 +64,6 @@ class StackedBarChart extends AbstractChart<
   StackedBarChartProps,
   StackedBarChartState
 > {
-
   state = {
     isSelectedIndex: 3
   };
@@ -102,7 +99,7 @@ class StackedBarChart extends AbstractChart<
     onDataPointClick: StackedBarChartProps["onDataPointClick"];
   }) =>
     data.map((x, i) => {
-      const barWidth = 32 * this.getBarPercentage();
+      const barWidth = 42 * this.getBarPercentage();
       const ret = [];
       let h = 0;
       let st = paddingTop;
@@ -118,17 +115,16 @@ class StackedBarChart extends AbstractChart<
         const y = barsAreaHeight - h + st;
         const xC =
           (paddingRight +
-            (i * (width - paddingRight)) / data.length +
+            (i * (width - paddingRight + 100)) / data.length +
             barWidth / 2) *
           fac;
-
         const onPress = () => {
           if (!onDataPointClick) {
             return;
           }
 
           this.setState({
-            isSelectedIndex : i
+            isSelectedIndex: i
           });
 
           onDataPointClick({
@@ -204,7 +200,82 @@ class StackedBarChart extends AbstractChart<
       );
     });
 
+  renderLeftArrow = ({
+    width,
+    onArrowClick
+  }: Pick<AbstractChartConfig, "width"> & {
+    onArrowClick: StackedBarChartProps["onArrowClick"];
+  }) => {
+    let direction = 0;
+
+    const onPress = () => {
+      if (!onArrowClick) {
+        return;
+      }
+
+      console.log("pressed left arrow");
+
+      // this.setState({
+      //   isSelectedIndex : i
+      // });
+
+      onArrowClick({
+        arrow: "left"
+      });
+    };
+
+    return (
+      <Rect
+        key={"left"}
+        x={width - 80}
+        y={0}
+        fill={"#99e5ea"}
+        width={25}
+        height={25}
+        onPress={onPress}
+      />
+    );
+  };
+
+  renderRightArrow = ({
+    width,
+    onArrowClick
+  }: Pick<AbstractChartConfig, "width"> & {
+    onArrowClick: StackedBarChartProps["onArrowClick"];
+  }) => {
+    let direction = 0;
+
+    const onPress = () => {
+      if (!onArrowClick) {
+        return;
+      }
+
+      console.log("pressed right arrow");
+
+      // this.setState({
+      //   isSelectedIndex : i
+      // });
+
+      onArrowClick({
+        arrow: "right"
+      });
+    };
+
+    return (
+      <Rect
+        key={"right"}
+        x={width - 40}
+        y={0}
+        fill={"#99e5ea"}
+        width={25}
+        height={25}
+        onPress={onPress}
+      />
+    );
+  };
+
   render() {
+    // increase paddingTop and the Svg height to add space above the graph
     const paddingTop = 15;
     const paddingRight = 50;
     const barWidth = 32 * this.getBarPercentage();
@@ -219,7 +290,8 @@ class StackedBarChart extends AbstractChart<
       segments = 4,
       decimalPlaces,
       percentile = false,
-      onDataPointClick
+      onDataPointClick,
+      onArrowClick
     } = this.props;
 
     const { borderRadius = 0 } = style;
@@ -260,6 +332,20 @@ class StackedBarChart extends AbstractChart<
             ry={borderRadius}
             fill="url(#backgroundGradient)"
           />
+          {/* <G>
+            {this.renderLeftArrow({
+              ...config,
+              width: width,
+              onArrowClick
+            })}
+          </G>
+          <G>
+            {this.renderRightArrow({
+              ...config,
+              width: width,
+              onArrowClick
+            })}
+          </G> */}
           <G>
             {this.renderHorizontalLines({
               ...config,

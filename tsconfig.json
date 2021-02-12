@@ -14,7 +14,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "rootDir": "./src",
-    "outDir": "./dist",
+    "outDir": "../telematics/node_modules/react-native-chart-kit/dist",
     "declaration": true,
     "declarationMap": true,
     "inlineSourceMap": true,

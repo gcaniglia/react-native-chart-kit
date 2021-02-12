@@ -283,10 +283,15 @@ class AbstractChart<
         return null;
       }
 
+      // const x =
+      //   (((width - paddingRight + 110) / labels.length) * i +
+      //     paddingRight + 5 +
+      //     horizontalOffset) *
+      //   fac;
       const x =
-        (((width - paddingRight) / labels.length) * i +
-          paddingRight +
-          horizontalOffset) *
+        (paddingRight +
+          (i * (width - paddingRight + 100)) / labels.length +
+          42) *
         fac;
 
       const y = (height * 3) / 4 + paddingTop + fontSize * 2 + xLabelsOffset;
@@ -297,7 +302,7 @@ class AbstractChart<
         }
 
         this.setState({
-          isSelectedIndex : i
+          isSelectedIndex: i
         });
 
         onDataPointClick({
