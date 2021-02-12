@@ -65,7 +65,7 @@ class StackedBarChart extends AbstractChart<
   StackedBarChartState
 > {
   state = {
-    isSelectedIndex: 3
+    isSelectedIndex: this.props.data.data.length - 1
   };
 
   getBarPercentage = () => {
