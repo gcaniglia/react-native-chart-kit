@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewStyle } from "react-native";
+import { View, ViewStyle, ScrollView } from "react-native";
 import { G, Rect, Svg, Text } from "react-native-svg";
 
 import AbstractChart, {
@@ -277,7 +277,7 @@ class StackedBarChart extends AbstractChart<
   render() {
     // increase paddingTop and the Svg height to add space above the graph
     const paddingTop = 15;
-    const paddingRight = 50;
+    const paddingRight = 40;
     const barWidth = 32 * this.getBarPercentage();
 
     const {
@@ -319,20 +319,51 @@ class StackedBarChart extends AbstractChart<
     var stackedBar = data.legend && data.legend.length == 0 ? false : true;
 
     return (
-      <View style={style}>
-        <Svg height={height} width={width}>
-          {this.renderDefs({
-            ...config,
-            ...this.props.chartConfig
-          })}
-          <Rect
-            width="100%"
-            height={height}
-            rx={borderRadius}
-            ry={borderRadius}
-            fill="url(#backgroundGradient)"
-          />
-          {/* <G>
+      <View style={{ flexDirection: "row" }}>
+        <View>
+          <Svg height={height} width={40}>
+            {this.renderDefs({
+              ...config,
+              ...this.props.chartConfig
+            })}
+            <G>
+              {withHorizontalLabels
+                ? this.renderHorizontalLabels({
+                    ...config,
+                    count: segments,
+                    data: [0, border],
+                    paddingTop,
+                    paddingRight,
+                    decimalPlaces
+                  })
+                : null}
+            </G>
+          </Svg>
+        </View>
+        <View>
+          <ScrollView
+            horizontal={true}
+            ref={ref => {
+              this.scrollView = ref;
+            }}
+            onContentSizeChange={() =>
+              this.scrollView.scrollToEnd({ animated: false })
+            }
+            showsHorizontalScrollIndicator={false}
+          >
+            <Svg height={height} width={width}>
+              {this.renderDefs({
+                ...config,
+                ...this.props.chartConfig
+              })}
+              <Rect
+                width="100%"
+                height={height}
+                rx={borderRadius}
+                ry={borderRadius}
+                fill="url(#backgroundGradient)"
+              />
+              {/* <G>
             {this.renderLeftArrow({
               ...config,
               width: width,
@@ -346,59 +377,49 @@ class StackedBarChart extends AbstractChart<
               onArrowClick
             })}
           </G> */}
-          <G>
-            {this.renderHorizontalLines({
-              ...config,
-              count: segments,
-              paddingTop
-            })}
-          </G>
-          <G>
-            {withHorizontalLabels
-              ? this.renderHorizontalLabels({
+              <G>
+                {this.renderHorizontalLines({
                   ...config,
                   count: segments,
-                  data: [0, border],
-                  paddingTop,
-                  paddingRight,
-                  decimalPlaces
-                })
-              : null}
-          </G>
-          <G>
-            {withVerticalLabels
-              ? this.renderVerticalLabels({
+                  paddingTop
+                })}
+              </G>
+              <G>
+                {withVerticalLabels
+                  ? this.renderVerticalLabels({
+                      ...config,
+                      labels: data.labels,
+                      paddingRight: paddingRight + 28,
+                      stackedBar,
+                      paddingTop,
+                      horizontalOffset: barWidth,
+                      onDataPointClick,
+                      isSelectedIndex: this.state.isSelectedIndex
+                    })
+                  : null}
+              </G>
+              <G>
+                {this.renderBars({
                   ...config,
-                  labels: data.labels,
-                  paddingRight: paddingRight + 28,
-                  stackedBar,
+                  data: data.data,
+                  border,
+                  colors: this.props.data.barColors,
                   paddingTop,
-                  horizontalOffset: barWidth,
-                  onDataPointClick,
-                  isSelectedIndex: this.state.isSelectedIndex
-                })
-              : null}
-          </G>
-          <G>
-            {this.renderBars({
-              ...config,
-              data: data.data,
-              border,
-              colors: this.props.data.barColors,
-              paddingTop,
-              paddingRight: paddingRight + 20,
-              stackedBar,
-              onDataPointClick
-            })}
-          </G>
-          {data.legend &&
-            data.legend.length != 0 &&
-            this.renderLegend({
-              ...config,
-              legend: data.legend,
-              colors: this.props.data.barColors
-            })}
-        </Svg>
+                  paddingRight: paddingRight + 20,
+                  stackedBar,
+                  onDataPointClick
+                })}
+              </G>
+              {data.legend &&
+                data.legend.length != 0 &&
+                this.renderLegend({
+                  ...config,
+                  legend: data.legend,
+                  colors: this.props.data.barColors
+                })}
+            </Svg>
+          </ScrollView>
+        </View>
       </View>
     );
   }
