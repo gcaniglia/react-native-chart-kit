@@ -28,6 +28,7 @@ export interface StackedBarChartProps extends AbstractChartProps {
    */
   data: StackedBarChartData;
   width: number;
+  visibleWidth?: number;
   height: number;
   chartConfig: AbstractChartConfig;
   hideLegend: boolean;
@@ -52,8 +53,6 @@ export interface StackedBarChartProps extends AbstractChartProps {
    * Callback that is called when a data point is clicked.
    */
   onDataPointClick?: (data: { index: number; x: number; y: number }) => void;
-
-  onArrowClick?: (data: { arrow: string }) => void;
 }
 
 type StackedBarChartState = {
@@ -66,11 +65,6 @@ class StackedBarChart extends AbstractChart<
 > {
   state = {
     isSelectedIndex: this.props.data.data.length - 1
-  };
-
-  getBarPercentage = () => {
-    const { barPercentage = 1 } = this.props.chartConfig;
-    return barPercentage;
   };
 
   getBarRadius = (ret: string | any[], x: string | any[]) => {
@@ -99,25 +93,22 @@ class StackedBarChart extends AbstractChart<
     onDataPointClick: StackedBarChartProps["onDataPointClick"];
   }) =>
     data.map((x, i) => {
-      const barWidth = 42 * this.getBarPercentage();
       const ret = [];
       let h = 0;
       let st = paddingTop;
+      const { visibleWidth } = this.props;
+      const barWidth = (1 / 6) * visibleWidth;
+      const initX = (1 / 12) * visibleWidth;
+      const nextX = barWidth + initX;
+      // alternately, we can calculate based on total width instead of visibleWidth:
+      // const initX = (data.length * 2) + data.length + 5 // 5 is the number of "segments" to center the first bar
 
-      let fac = 1;
-      if (stackedBar) {
-        fac = 0.7;
-      }
       const sum = this.props.percentile ? x.reduce((a, b) => a + b, 0) : border;
       const barsAreaHeight = (height / 4) * 3;
       for (let z = 0; z < x.length; z++) {
         h = barsAreaHeight * (x[z] / sum);
         const y = barsAreaHeight - h + st;
-        const xC =
-          (paddingRight +
-            (i * (width - paddingRight + 100)) / data.length +
-            barWidth / 2) *
-          fac;
+        const xC = initX + i * nextX;
         const onPress = () => {
           if (!onDataPointClick) {
             return;
@@ -200,88 +191,14 @@ class StackedBarChart extends AbstractChart<
       );
     });
 
-  renderLeftArrow = ({
-    width,
-    onArrowClick
-  }: Pick<AbstractChartConfig, "width"> & {
-    onArrowClick: StackedBarChartProps["onArrowClick"];
-  }) => {
-    let direction = 0;
-
-    const onPress = () => {
-      if (!onArrowClick) {
-        return;
-      }
-
-      console.log("pressed left arrow");
-
-      // this.setState({
-      //   isSelectedIndex : i
-      // });
-
-      onArrowClick({
-        arrow: "left"
-      });
-    };
-
-    return (
-      <Rect
-        key={"left"}
-        x={width - 80}
-        y={0}
-        fill={"#99e5ea"}
-        width={25}
-        height={25}
-        onPress={onPress}
-      />
-    );
-  };
-
-  renderRightArrow = ({
-    width,
-    onArrowClick
-  }: Pick<AbstractChartConfig, "width"> & {
-    onArrowClick: StackedBarChartProps["onArrowClick"];
-  }) => {
-    let direction = 0;
-
-    const onPress = () => {
-      if (!onArrowClick) {
-        return;
-      }
-
-      console.log("pressed right arrow");
-
-      // this.setState({
-      //   isSelectedIndex : i
-      // });
-
-      onArrowClick({
-        arrow: "right"
-      });
-    };
-
-    return (
-      <Rect
-        key={"right"}
-        x={width - 40}
-        y={0}
-        fill={"#99e5ea"}
-        width={25}
-        height={25}
-        onPress={onPress}
-      />
-    );
-  };
-
   render() {
     // increase paddingTop and the Svg height to add space above the graph
     const paddingTop = 15;
     const paddingRight = 40;
-    const barWidth = 32 * this.getBarPercentage();
 
     const {
       width,
+      visibleWidth,
       height,
       style = {},
       data,
@@ -290,11 +207,9 @@ class StackedBarChart extends AbstractChart<
       segments = 4,
       decimalPlaces,
       percentile = false,
-      onDataPointClick,
-      onArrowClick
+      onDataPointClick
     } = this.props;
 
-    const { borderRadius = 0 } = style;
     const config = {
       width,
       height
@@ -319,7 +234,9 @@ class StackedBarChart extends AbstractChart<
     var stackedBar = data.legend && data.legend.length == 0 ? false : true;
 
     return (
-      <View style={{ flexDirection: "row" }}>
+      <View style={{ flexDirection: "row", paddingRight: 100 }}>
+        {" "}
+        {/* Add padding to center the most recent bar */}
         <View>
           <Svg height={height} width={40}>
             {this.renderDefs({
@@ -356,27 +273,6 @@ class StackedBarChart extends AbstractChart<
                 ...config,
                 ...this.props.chartConfig
               })}
-              <Rect
-                width="100%"
-                height={height}
-                rx={borderRadius}
-                ry={borderRadius}
-                fill="url(#backgroundGradient)"
-              />
-              {/* <G>
-            {this.renderLeftArrow({
-              ...config,
-              width: width,
-              onArrowClick
-            })}
-          </G>
-          <G>
-            {this.renderRightArrow({
-              ...config,
-              width: width,
-              onArrowClick
-            })}
-          </G> */}
               <G>
                 {this.renderHorizontalLines({
                   ...config,
@@ -388,11 +284,12 @@ class StackedBarChart extends AbstractChart<
                 {withVerticalLabels
                   ? this.renderVerticalLabels({
                       ...config,
+                      visibleWidth,
                       labels: data.labels,
-                      paddingRight: paddingRight + 28,
+                      paddingRight: paddingRight,
                       stackedBar,
                       paddingTop,
-                      horizontalOffset: barWidth,
+                      horizontalOffset: 0,
                       onDataPointClick,
                       isSelectedIndex: this.state.isSelectedIndex
                     })
@@ -405,7 +302,7 @@ class StackedBarChart extends AbstractChart<
                   border,
                   colors: this.props.data.barColors,
                   paddingTop,
-                  paddingRight: paddingRight + 20,
+                  paddingRight: 0, // remove extra padding between leftmost bar and y axis
                   stackedBar,
                   onDataPointClick
                 })}

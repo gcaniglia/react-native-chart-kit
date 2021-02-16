@@ -68,6 +68,9 @@ class AbstractChart<
       );
     } else {
       return Math.max(...data) - Math.min(...data) || 1;
+      // TODO: round to a more reasonable number and adjust the bars accordingly
+      // the below line will round the numbers, but then the bars will be wrong
+      // return Math.ceil(y/5)*5;
     }
   };
 
@@ -240,12 +243,10 @@ class AbstractChart<
 
   renderVerticalLabels = ({
     labels = [],
-    width,
     height,
-    paddingRight,
+    visibleWidth,
     paddingTop,
     horizontalOffset = 0,
-    stackedBar = false,
     verticalLabelRotation = 0,
     formatXLabel = xLabel => xLabel,
     onDataPointClick,
@@ -273,27 +274,15 @@ class AbstractChart<
 
     const fontSize = 12;
 
-    let fac = 1;
-    if (stackedBar) {
-      fac = 0.71;
-    }
-
     return labels.map((label, i) => {
       if (hidePointsAtIndex.includes(i)) {
         return null;
       }
 
-      // const x =
-      //   (((width - paddingRight + 110) / labels.length) * i +
-      //     paddingRight + 5 +
-      //     horizontalOffset) *
-      //   fac;
-      const x =
-        (paddingRight +
-          (i * (width - paddingRight + 100)) / labels.length +
-          42) *
-        fac;
-
+      const barWidth = (1 / 6) * visibleWidth;
+      const initX = (1 / 12) * visibleWidth;
+      const nextX = barWidth + initX;
+      const x = initX + initX + i * nextX;
       const y = (height * 3) / 4 + paddingTop + fontSize * 2 + xLabelsOffset;
 
       const onPress = () => {
@@ -317,10 +306,10 @@ class AbstractChart<
           <G key={Math.random()}>
             <Rect
               key={Math.random()}
-              x={x - horizontalOffset / 2}
+              x={x - barWidth * 0.5}
               y={y - 20}
               fill={"white"}
-              width={horizontalOffset}
+              width={barWidth}
               height={20}
               onPress={onPress}
             />
@@ -340,10 +329,10 @@ class AbstractChart<
             </Text>
             <Rect
               key={Math.random()}
-              x={x - horizontalOffset / 2 + 4}
+              x={x - barWidth * 0.3}
               y={y + 4}
               fill={"#99e5ea"}
-              width={horizontalOffset - 8}
+              width={barWidth * 0.625}
               height={3}
               onPress={onPress}
             />
@@ -354,10 +343,10 @@ class AbstractChart<
           <G key={Math.random()}>
             <Rect
               key={Math.random()}
-              x={x - horizontalOffset / 2}
+              x={x - barWidth * 0.5}
               y={y - 20}
               fill={"white"}
-              width={horizontalOffset}
+              width={barWidth}
               height={20}
               onPress={onPress}
             />
