@@ -232,11 +232,9 @@ class StackedBarChart extends AbstractChart<
     }
 
     var stackedBar = data.legend && data.legend.length == 0 ? false : true;
-
+    // Add paddingRight to center the most recent bar within the graph
     return (
       <View style={{ flexDirection: "row", paddingRight: 100 }}>
-        {" "}
-        {/* Add padding to center the most recent bar */}
         <View>
           <Svg height={height} width={40}>
             {this.renderDefs({
