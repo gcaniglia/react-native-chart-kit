@@ -307,10 +307,10 @@ class AbstractChart<
             <Rect
               key={Math.random()}
               x={x - barWidth * 0.5}
-              y={y - 20}
+              y={y - 24}
               fill={"white"}
               width={barWidth}
-              height={20}
+              height={40}
               onPress={onPress}
             />
             <Text
@@ -344,10 +344,10 @@ class AbstractChart<
             <Rect
               key={Math.random()}
               x={x - barWidth * 0.5}
-              y={y - 20}
+              y={y - 24}
               fill={"white"}
               width={barWidth}
-              height={20}
+              height={40}
               onPress={onPress}
             />
             <Text
